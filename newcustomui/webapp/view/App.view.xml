@@ -1,0 +1,12 @@
+<mvc:View controllerName="com.ink.ui.newcustomui.controller.App"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <App id="app">
+    <Page id="page1" title="{i18n>title}">
+        <content>
+            <Text text="Hello From Workflow"></Text>
+        </content>
+    </Page>    
+    </App>
+</mvc:View>

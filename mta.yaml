@@ -1,0 +1,102 @@
+_schema-version: "3.2"
+ID: WF-custom-ui
+version: 0.0.1
+modules:
+- name: workflow-module
+  type: com.sap.application.content
+  path: workflow-module
+  requires:
+  - name: workflow_mta
+    parameters:
+      content-target: true
+- name: WF-custom-ui-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: WF-custom-ui-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - customui.zip
+      name: customui
+      target-path: resources/
+    - artifacts:
+      - cominkuinewcustomui.zip
+      name: cominkuinewcustomui
+      target-path: resources/
+- name: customui
+  type: html5
+  path: customui
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: mta-project
+  type: approuter.nodejs
+  path: app/
+  requires:
+  - name: mta-project-auth
+  - name: WF-custom-ui-destination-service
+    group: destinations
+    properties:
+      forwardAuthToken: false
+      name: ui5
+      url: https://ui5.sap.com
+  parameters:
+    disk-quota: 256M
+    keep-existing-routes: true
+    memory: 256M
+- name: cominkuinewcustomui
+  type: html5
+  path: newcustomui
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: workflow_mta
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: workflow
+    service-plan: standard
+- name: WF-custom-ui-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: WF-custom-ui-html5-srv
+    service-plan: app-host
+- name: WF-custom-ui-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: false
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: WF-custom-ui-destination-service
+    service-plan: lite
+- name: mta-project-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+parameters:
+  deploy_mode: html5-repo
